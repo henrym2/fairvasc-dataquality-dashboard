@@ -23,10 +23,10 @@
 </template>
 
 <script>
-import Widget from "./Widget.vue"
+import Widget from "../components/Widget.vue"
 
   export default {
-    name: 'mainPage',
+    name: 'Uniqueness',
     components: {
       Widget
     },

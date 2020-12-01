@@ -19,80 +19,91 @@
         <v-list-item-title>FAIRVASC Quality Dashboard</v-list-item-title>
       </v-list-item>
       <v-divider></v-divider>
-      <v-list-group
-        :value="true"
-        @click.stop
-      >
-        <template v-slot:activator>
-          <v-list-item-icon><v-icon>account_balance</v-icon></v-list-item-icon>
+        <v-list-item>
           <v-list-item-title>Registries</v-list-item-title>
-          <v-list-item-action></v-list-item-action>
-        </template>
-        <v-list-item v-for="registry in registryList" :key="registry.id">
-          <v-list-item-title>{{registry.name}}</v-list-item-title>
-          <v-list-item-action><v-checkbox v-model="registry.selected"></v-checkbox></v-list-item-action>
         </v-list-item>
-      </v-list-group>
+
+        <v-list-item v-for="item in registryList" :key="`registry-${item.id}`" :value="item" ripple @click="item.selected = !item.selected">
+            <v-list-item-action>
+              <v-checkbox
+                :input-value="item.selected"
+              ></v-checkbox>
+            </v-list-item-action>
+            <v-list-item-content>
+              <v-list-item-title v-text="item.name"></v-list-item-title>
+            </v-list-item-content>
+        </v-list-item>
 
       <v-divider></v-divider>
-
-      <v-list-group
-        :value="true"
-        @click.stop
+      <v-expansion-panels
+        accordion
+        hover
+        :value="[0]"
+        flat
+        multiple
       >
-        <template v-slot:activator>
-          <v-list-item-icon><v-icon>insights</v-icon></v-list-item-icon>
-          <v-list-item-title>Metrics</v-list-item-title>
-        </template>
-        
-        <v-list-item v-for="metric in metricsList" :key="metric.id" @click="changePage(metric.id)">
-          <v-list-item-icon><v-icon>{{metric.icon}}</v-icon></v-list-item-icon>
-          <v-list-item-title>{{metric.name}}</v-list-item-title>
-        </v-list-item>
-      </v-list-group>
-
+      <v-expansion-panel>
+        <v-expansion-panel-header>
+          Metrics
+        </v-expansion-panel-header>
+        <v-expansion-panel-content>
+          <v-list-item v-for="metric in metricsList" :key="metric.id" @click.stop="changePage(metric.id)">
+            <v-list-item-icon><v-icon>{{metric.icon}}</v-icon></v-list-item-icon>
+            <v-list-item-title>{{metric.name}}</v-list-item-title>
+          </v-list-item>
+        </v-expansion-panel-content>
+      </v-expansion-panel>
+      </v-expansion-panels>
       <v-divider></v-divider>
+
     </v-list>
 
     </v-navigation-drawer>
     
 
     <v-main>
-      
-      <MainPage/>
-      
+        <main-page v-if="currentPage == -1"></main-page>
+        <uniqueness v-if="currentPage == 0"></uniqueness>
+        <consistency v-if="currentPage == 1"></consistency>
+        <completeness v-if="currentPage == 2"></completeness>
+        <correctness v-if="currentPage == 3"></correctness>
     </v-main>
   </v-app>
 </template>
 
 <script>
-import MainPage from './components/MainPage.vue';
+import Pages from './pages/pages.js'
 
 export default {
   name: 'App',
 
-  components: {
-    MainPage,
-  },
+  components: Pages,
 
   data: () => ({
     drawer: true,
     registryList: [
       {id: 0, name: "Dublin", selected: false},
       {id: 1, name: "Skáné", selected: false},
-      {id: 2, name: "Poland", selected: false}
+      {id: 2, name: "Poland", selected: false},
     ],
+    selectedRegistires: [],
     metricsList: [
       {id: 0, name: "Uniqueness", icon: "fingerprint"},
       {id: 1, name: "Consistency", icon: "panorama_fish_eye"},
       {id: 2, name: "Completeness", icon: "assignment"},
       {id: 3, name: "Correctness", icon: "check_circle"}
-    ]
+    ],
+    currentPage: -1
   }),
+  computed: {
+    pages() {
+      return [{id: -1, name: "Main Page"}, ...this.metricsList]
+      }
+  },
 
   methods: {
     changePage(id) {
-      alert(id)
+      this.currentPage = id
     }
   }
 };

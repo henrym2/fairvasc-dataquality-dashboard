@@ -1,9 +1,9 @@
 <template>
     <v-card>
-        <!-- <v-card-title>{{title}}</v-card-title>
-        <v-card-subtitle>{{subtitle}}</v-card-subtitle> -->
         <v-toolbar flat>
             <v-toolbar-title>{{title}}</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-icon color="primary" @click="expand">open_in_full</v-icon>
         </v-toolbar>
         <v-divider></v-divider>
         <v-card-text>
@@ -17,7 +17,13 @@ export default {
     name: "Widget",
     props: {
         "title": String,
-        "subtitle": String
+        "subtitle": String,
+        "id": Number
+    },
+    methods: {
+        expand() {
+            this.$emit("expand")
+        }
     }
 
 }
