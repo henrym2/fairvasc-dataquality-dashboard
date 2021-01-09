@@ -30,6 +30,9 @@ import Widget from "../components/Widget.vue"
     components: {
       Widget
     },
+    props: {
+      registries: Array
+    },
     data: () => ({
       
     }),

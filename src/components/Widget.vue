@@ -1,7 +1,16 @@
 <template>
-    <v-card>
+    <v-card
+        elevation="4"
+    >
         <v-toolbar flat>
-            <v-toolbar-title>{{title}}</v-toolbar-title>
+            <v-toolbar-title>
+                <v-card-title>
+                    {{title}}
+                </v-card-title>
+                <v-card-subtitle>
+                    {{subtitle}}
+                </v-card-subtitle>
+            </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-icon color="primary" @click="expand">open_in_full</v-icon>
         </v-toolbar>
