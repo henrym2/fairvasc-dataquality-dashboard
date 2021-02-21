@@ -12,6 +12,10 @@
                 </v-card-subtitle>
             </v-toolbar-title>
             <v-spacer></v-spacer>
+            <div class="mt-4 mr-1">
+                <slot class="mt-3" name="controls">
+                </slot>
+            </div>
             <v-icon color="primary" @click="expand">open_in_full</v-icon>
         </v-toolbar>
         <v-divider></v-divider>
