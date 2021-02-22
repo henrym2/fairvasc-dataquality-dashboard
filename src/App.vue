@@ -70,7 +70,7 @@
     </v-navigation-drawer>
     
     <v-main>
-        <main-page v-if="currentPage == -1" :registries="registryList || []" ></main-page>
+        <main-page @navigate="(page) => {changePage(metricsList.find(e => e.name === page).id)}" v-if="currentPage == -1" :registries="registryList || []" ></main-page>
         <uniqueness v-if="currentPage == 0" :registries="registryList || []"></uniqueness>
         <consistency v-if="currentPage == 1" :registries="registryList || []"></consistency>
         <completeness v-if="currentPage == 2" :registries="registryList || []"></completeness>

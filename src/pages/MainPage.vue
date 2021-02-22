@@ -2,26 +2,38 @@
   <v-container>
     <v-row>
       <v-col>
-        <Widget title="Uniqueness" subtitle="Percentage of duplicated entries">
+        <Widget subtitle="Percentage of duplicated entries">
+          <template v-slot:title>
+            <a style="color:black" @click="navigate('Uniqueness')">Uniqueness</a>
+          </template>
           <column-chart label="Percentage of duplicated data" :colors="registries.map(r => r.color)" suffix="%" :data="filterReg(unique)" :download="true"></column-chart>
         </Widget>
       </v-col>
       <v-col>
-        <Widget title="Completeness" subtitle="Percentage of empty or missing datapoints across all registires">
+        <Widget subtitle="Percentage of empty or missing datapoints across all registires">
+            <template v-slot:title>
+              <a style="color:black" @click="navigate('Completeness')">Completeness</a>
+            </template>
             <column-chart label="Percentage of missing data" :colors="registries.map(r => r.color)" suffix="%" :data="filterReg(complete)" :download="true"></column-chart>
         </Widget>
       </v-col>
     </v-row>
     <v-row>
       <v-col>
-        <Widget title="Correctness" subtitle="Percentage of incorrect values">
+        <Widget subtitle="Percentage of incorrect values">
+            <template v-slot:title>
+              <a style="color:black" @click="navigate('Correctness')">Correctness</a>
+            </template>
             <bar-chart label="Percentage of incorrect data" :colors="registries.map(r => r.color)" suffix="%" :data="filterReg(correct)" :download="true"></bar-chart>
         </Widget>
       </v-col>
     </v-row>
     <v-row>
       <v-col>
-        <Widget title="Consistency" subtitle="Percentage of incorrectly formatted data">
+        <Widget subtitle="Percentage of incorrectly formatted data">
+          <template v-slot:title>
+            <a style="color:black" @click="navigate('Consistency')">Consistency</a>
+          </template>
           <column-chart label="Inconsistent data" :colors="registries.map(r => r.color)" :data="filterReg(consistent)" :download="true"></column-chart>
         </Widget>
       </v-col>
@@ -39,7 +51,8 @@ import config from "../config"
       Widget
     },
     props: {
-      registries: Array
+      registries: Array,
+      pages: Array
     },
     data: () => ({
       unique: [],
@@ -61,10 +74,10 @@ import config from "../config"
           let promises = ['unique', 'complete', 'consistency', 'correct']
           promises = promises.map(e => this.axios.post(`${config.apiURL}/totals/${e}`, this.registries.map(e => e.Registry)))
           let data = await Promise.allSettled(promises)
-          this.unique = this.formatData(data[0].value.data)
-          this.complete = this.formatData(data[1].value.data)
-          this.consistent = this.formatData(data[2].value.data)
-          this.correct = this.formatData(data[3].value.data)
+          this.unique = this.formatData(data[0].value.data) 
+          this.complete = this.formatData(data[1].value.data) 
+          this.consistent = this.formatData(data[2].value.data) 
+          this.correct = this.formatData(data[3].value.data) 
         } catch (e) {
           if (!this.retry) {
             this.getData()
@@ -72,6 +85,9 @@ import config from "../config"
           }
           console.log(e)
         }
+      },
+      navigate(page) {
+        this.$emit("navigate", page)
       },
       formatData(data) {
         return Object.keys(data).map(e => (

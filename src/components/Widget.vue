@@ -5,6 +5,9 @@
         <v-toolbar flat>
             <v-toolbar-title>
                 <v-card-title>
+                    <slot name="title">
+                        
+                    </slot>
                     {{title}}
                 </v-card-title>
                 <v-card-subtitle>
