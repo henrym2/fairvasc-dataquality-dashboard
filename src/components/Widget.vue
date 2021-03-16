@@ -8,7 +8,9 @@
                     <slot name="title">
                         
                     </slot>
+                    <div v-if="!(!!$slots.title)">
                     {{title}}
+                    </div>
                 </v-card-title>
                 <v-card-subtitle>
                     {{subtitle}}
@@ -19,7 +21,17 @@
                 <slot class="mt-3" name="controls">
                 </slot>
             </div>
-            <v-icon color="primary" @click="expand">open_in_full</v-icon>
+            <v-tooltip top>
+                <template v-slot:activator="{ on, attrs } ">
+                    <v-icon
+                        v-bind="attrs"
+                        v-on="on" 
+                        color="primary" 
+                        @click="expand"
+                    >open_in_full</v-icon>
+                </template>
+                <span>Click to expand</span>
+            </v-tooltip>
         </v-toolbar>
         <v-divider></v-divider>
         <v-card-text>
@@ -38,7 +50,7 @@ export default {
     },
     methods: {
         expand() {
-            this.$emit("expand")
+            this.$emit("expand", {id: this.id, name: this.title, subtitle: this.subtitle})
         }
     }
 
