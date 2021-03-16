@@ -9,13 +9,51 @@
     <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
     
     <v-toolbar-title>FAIRVASC Data Quality Dashboard</v-toolbar-title>
+
+    <v-spacer>
+    </v-spacer>
+        
+    <v-toolbar-items>
+      <v-select
+        class="mt-3"
+        v-model="selectedTime"
+        :items="daySeries"
+        item-text="date"
+        item-value="path"
+        single-line
+        return-object
+      >
+      </v-select>
+      <v-menu
+        :close-on-content-click="false"
+        z-index="1001"
+      >
+        <template v-slot:activator="{ on, attrs }">
+          <v-text-field 
+            class="mt-3 ml-3"
+            v-model="selectedDay"
+            v-bind="attrs"
+            v-on="on"
+            readonly
+          ></v-text-field>
+        </template>
+        <v-date-picker
+          @change="changeDate"
+          v-model="selectedDay"
+          no-title
+          scrollable
+          :events="timeSeries.map(e => new Date(e.date).toISOString().substr(0,10))"
+        >
+        </v-date-picker>
+      </v-menu>
+    </v-toolbar-items>
     </v-app-bar>
     <v-navigation-drawer
       v-model="drawer"
       app
     >
     <v-list>
-      <v-list-item @click="changePage(-1)">
+      <v-list-item @click="changePage(-1)" >
         <v-list-item-icon><v-icon>home</v-icon></v-list-item-icon>
         <v-list-item-title>Dashboard</v-list-item-title>
       </v-list-item>
@@ -55,27 +93,61 @@
           Metrics
         </v-expansion-panel-header>
         <v-expansion-panel-content>
+        <v-list>
+          <v-list-item-group>
           <v-list-item class="p-0" v-for="metric in metricsList" :key="metric.id" @click.stop="changePage(metric.id)">
             <v-list-item-title>{{metric.name}}</v-list-item-title>
             <v-list-item-icon><v-icon>{{metric.icon}}</v-icon></v-list-item-icon>
 
           </v-list-item>
+          </v-list-item-group>
+        </v-list>
         </v-expansion-panel-content>
       </v-expansion-panel>
       </v-expansion-panels>
       <v-divider></v-divider>
-
+      <v-list-item class="mt-3">
+        <v-file-input
+          v-model="file"
+          :state="Boolean(file)"
+          placeholder=".csv"
+          outlined
+          :show-size="1000"
+          label="Quality csv"
+          dense
+        ></v-file-input>
+        <v-list-item-action class="mb-9">
+          <v-btn fab color="primary" @click=upload small><v-icon>publish</v-icon></v-btn>
+        </v-list-item-action>
+      </v-list-item>
     </v-list>
 
     </v-navigation-drawer>
     
     <v-main>
-        <main-page @navigate="(page) => {changePage(metricsList.find(e => e.name === page).id)}" v-if="currentPage == -1" :registries="registryList || []" ></main-page>
-        <uniqueness v-if="currentPage == 0" :registries="registryList || []"></uniqueness>
-        <consistency v-if="currentPage == 1" :registries="registryList || []"></consistency>
-        <completeness v-if="currentPage == 2" :registries="registryList || []"></completeness>
-        <correctness v-if="currentPage == 3" :registries="registryList || []"></correctness>
+        <main-page @navigate="(page) => {changePage(metricsList.find(e => e.name === page).id)}" v-if="currentPage == -1" :registries="registryList || []" :set="selectedTime"></main-page>
+        <uniqueness v-if="currentPage == 0" :registries="registryList || []" :set="selectedTime" @error=triggerSnack ></uniqueness>
+        <consistency v-if="currentPage == 1" :registries="registryList || []" :set="selectedTime" @error=triggerSnack ></consistency>
+        <completeness v-if="currentPage == 2" :registries="registryList || []" :set="selectedTime" @error=triggerSnack ></completeness>
+        <correctness v-if="currentPage == 3" :registries="registryList || []" :set="selectedTime" @error=triggerSnack ></correctness>
     </v-main>
+    <v-snackbar
+      v-model="snackbar.state"
+      :color="snackbar.color"
+      :timeout="5000"
+    >
+      {{ snackbar.text }}
+      <template v-slot:action="{ attrs }">
+        <v-btn
+          color="error"
+          text
+          v-bind="attrs"
+          @click="snackbar.state = false"
+        >
+          Close
+        </v-btn>
+      </template>
+    </v-snackbar>
   </v-app>
 </template>
 
@@ -83,6 +155,11 @@
 import Pages from './pages/pages.js'
 import config from "./config.js"
 var randomColor = () => Math.floor(Math.random()*16777215).toString(16);
+const datesAreOnSameDay = (first, second) =>
+    first.getFullYear() === second.getFullYear() &&
+    first.getMonth() === second.getMonth() &&
+    first.getDate() === second.getDate();
+
 export default {
   name: 'App',
 
@@ -90,17 +167,25 @@ export default {
 
   data: () => ({
     drawer: true,
-    registryList: [
-
-    ],
+    registryList: [],
     metricsList: [
       {id: 0, name: "Uniqueness", icon: "fingerprint",},
       {id: 1, name: "Consistency", icon: "panorama_fish_eye"},
       {id: 2, name: "Completeness", icon: "assignment"},
       {id: 3, name: "Correctness", icon: "check_circle"}
     ],
+    timeSeries: [],
+    daySeries: [],
+    selectedDay: new Date().toISOString().substr(0,10),
+    selectedTime: {},
     currentPage: -1,
-    multi: false
+    multi: false,
+    file: null,
+    snackbar: {
+      text: "",
+      state: false,
+      color: "primary"
+    }
   }),
   computed: {
     pages() {
@@ -109,6 +194,7 @@ export default {
   },
   created() {
     this.getRegistries()
+    this.getTimeSeries()
   },
   watch: {
     registryList: {
@@ -118,8 +204,45 @@ export default {
       }
     }
   },
-
   methods: {
+    triggerSnack(trigger) {
+      this.snackbar = trigger
+    },
+    changeDate(input) {
+      let selected = new Date(input)
+      this.daySeries = this.timeSeries.filter(e => datesAreOnSameDay(new Date(e.date), selected))
+    },
+    async getTimeSeries() {
+      try {
+        let { data } = await this.axios.get(`${config.apiURL}/csvList`)
+        this.timeSeries = data
+        this.selectedTime = data[0]
+      } catch (e) {
+        console.log(e)
+      }
+    },
+    async upload () {
+      if (this.file !== null) {
+        let formData = new FormData()
+        const filename = this.file.name.split('.')[0]
+        formData.append('file', this.file)
+        formData.append('name', filename)
+        try {
+          await this.axios.post(`${config.apiURL}/uploadCSV`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            },
+            body: {
+                name: this.file.name
+            }
+          })
+          this.file = null
+          await this.getTimeSeries()
+        } catch (e) {
+          console.log(e, "Error")
+        }
+      }
+    },
     changePage(id) {
       this.currentPage = id
     },
