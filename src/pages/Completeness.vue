@@ -8,7 +8,7 @@
       </v-col>
       <v-col>
         <Widget title="Total missing data over time" subtitle="Total percentage of missing data over a period of time" @expand="maximise" :id=1>
-          <line-chart :data="filterReg(completenessOverTime)" :legend="true" suffix="%" :download="true"></line-chart>
+          <line-chart :data="filterReg(completenessOverTime)" :library="config.zoomAndPan" :legend="true" suffix="%" :download="true"></line-chart>
         </Widget>
       </v-col>
     </v-row>
@@ -35,7 +35,7 @@
               </template>
             </v-select>
           </template>
-            <column-chart :data="filterVals(filterReg(completenessData))" :download="true"></column-chart>
+            <column-chart :data="filterVals(filterReg(completenessData))" :library="config.zoomAndPan" :download="true" suffix="%"></column-chart>
         </Widget>
       </v-col>
     </v-row>
@@ -55,8 +55,8 @@
         </v-toolbar>
         <v-divider/>
             <pie-chart v-if="maximised.id == 0" :data="averageAll(filterReg(completenessData))" :legend="true" suffix="%" :download="true"></pie-chart>
-            <line-chart v-if="maximised.id == 1" :data="filterReg(completenessOverTime)" :legend="true" suffix="%" :download="true"></line-chart>
-            <column-chart v-if="maximised.id == 2" :data="filterVals(filterReg(completenessData))" suffix="%" :download="true"></column-chart>
+            <line-chart v-if="maximised.id == 1" :library="config.zoomAndPan" :data="filterReg(completenessOverTime)" :legend="true" suffix="%" :download="true" height="70vh"></line-chart>
+            <column-chart v-if="maximised.id == 2" :library="config.zoomAndPan" :data="filterVals(filterReg(completenessData))" suffix="%" :download="true" height="70vh"></column-chart>
         <v-divider/>
           <v-card-actions>
             <v-btn color="success" class="ml-auto" @click="dialog=false">Close</v-btn>
@@ -87,6 +87,7 @@ import dataHandlers from "../js/dataHandlers.js"
       filter: [],
       dialog: false,
       maximised: {},
+      config
     }),
     mounted() {
       this.getData()

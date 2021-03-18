@@ -3,12 +3,12 @@
     <v-row>
       <v-col>
         <Widget title="Consistency Data Over Time" subtitle="Total average percentage of consistent data over time" :id=0 @expand="maximise">
-          <line-chart :data="filterReg(consistencyOverTime)" :download="true"></line-chart>
+          <line-chart :library="config.zoomAndPan" :data="filterReg(consistencyOverTime)" :download="true" suffix="%"></line-chart>
         </Widget>
       </v-col>
       <v-col>
         <Widget title="Average Total Consistency" subtitle="Total average percentage of cosistent data" :id=1 @expand="maximise">
-            <pie-chart :data="averageAll(filterReg(consistencyData))" :download="true"></pie-chart>
+            <bar-chart :data="averageAll(filterReg(consistencyData))" :download="true" suffix="%"></bar-chart>
         </Widget>
       </v-col>
     </v-row>
@@ -35,7 +35,7 @@
               </template>
             </v-select>
           </template>
-            <column-chart :data="filterVals(filterReg(consistencyData))" :download="true"></column-chart>
+            <column-chart :library="config.zoomAndPan" :data="filterVals(filterReg(consistencyData))" :download="true" suffix="%"></column-chart>
         </Widget>
       </v-col>
     </v-row>
@@ -54,9 +54,9 @@
           </v-toolbar-title>
         </v-toolbar>
         <v-divider/>
-            <line-chart v-if="maximised.id == 0" :data="filterReg(consistencyOverTime)" :legend="true" suffix="%" :download="true" height="70vh"></line-chart>
-            <pie-chart v-if="maximised.id == 1" :data="averageAll(filterReg(consistencyData))" :legend="true" suffix="%" :download="true"></pie-chart>
-            <column-chart v-if="maximised.id == 2" :data="filterVals(filterReg(consistencyData))" suffix="%" :download="true" height="70vh"></column-chart>
+            <line-chart v-if="maximised.id == 0" :library="config.zoomAndPan" :data="filterReg(consistencyOverTime)" :legend="true" suffix="%" :download="true" height="70vh"></line-chart>
+            <bar-chart v-if="maximised.id == 1" :data="averageAll(filterReg(consistencyData))" :legend="true" suffix="%" :download="true"></bar-chart>
+            <column-chart v-if="maximised.id == 2" :library="config.zoomAndPan" :data="filterVals(filterReg(consistencyData))" suffix="%" :download="true" height="70vh"></column-chart>
         <v-divider/>
           <v-card-actions>
             <v-btn color="success" class="ml-auto" @click="dialog=false">Close</v-btn>
@@ -96,7 +96,8 @@ import dataHandlers from "../js/dataHandlers"
       filterKeys: [],
       filter: [],
       dialog: false,
-      maximised: {}
+      maximised: {},
+      config
     }),
     methods: {
       maximise(toMaximise) {

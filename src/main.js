@@ -4,10 +4,12 @@ import axios from 'axios'
 import VueAxios from 'vue-axios'
 import vuetify from './plugins/vuetify';
 import ChartKick from "vue-chartkick"
-import Chart from 'chart.js'
+// import Chart from 'chart.js'
+import highcharts from "highcharts"
 
 Vue.config.productionTip = false
-Vue.use(ChartKick.use(Chart))
+// Vue.use(ChartKick.use(Chart))
+Vue.use(ChartKick.use(highcharts))
 Vue.use(VueAxios, axios)
 
 new Vue({

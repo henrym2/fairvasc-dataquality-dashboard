@@ -3,12 +3,12 @@
     <v-row>
       <v-col>
         <Widget title="Unique data percentage over time" subtitle="Average total of non-duplicate data over time" :id=0 @expand="maximise">
-          <line-chart :data="filterReg(uniqueOverTime)" :download="true"></line-chart>
+          <line-chart :data="filterReg(uniqueOverTime)" :library="config.zoomAndPan" :download="true" suffix="%"></line-chart>
         </Widget>
       </v-col>
       <v-col>
         <Widget title="Average unique data percentage" subtitle="Average unique data percentage of the current dataset" :id=1 @expand="maximise">
-            <pie-chart :data="averageAll(filterReg(uniquenessData))" :download="true"></pie-chart>
+            <pie-chart :data="averageAll(filterReg(uniquenessData))" :download="true" suffix="%"></pie-chart>
         </Widget>
       </v-col>
     </v-row>
@@ -35,7 +35,7 @@
                 </template>
               </v-select>
             </template>
-            <column-chart :data="filterVals(filterReg(uniquenessData))" :download="true"></column-chart>
+            <column-chart :data="filterVals(filterReg(uniquenessData))" :library="config.zoomAndPan" :download="true" suffix="%"></column-chart>
         </Widget>
       </v-col>
     </v-row>
@@ -54,9 +54,9 @@
           </v-toolbar-title>
         </v-toolbar>
         <v-divider/>
-            <line-chart v-if="maximised.id == 0" :data="filterReg(uniqueOverTime)" :legend="true" suffix="%" :download="true" height="70vh"></line-chart>
+            <line-chart v-if="maximised.id == 0" :library="config.zoomAndPan" :data="filterReg(uniqueOverTime)" :legend="true" suffix="%" :download="true" height="70vh"></line-chart>
             <pie-chart v-if="maximised.id == 1" :data="averageAll(filterReg(uniquenessData))" :legend="true" suffix="%" :download="true"></pie-chart>
-            <column-chart v-if="maximised.id == 2" :data="filterVals(filterReg(uniquenessData))" suffix="%" :download="true" height="70vh"></column-chart>
+            <column-chart v-if="maximised.id == 2" :library="config.zoomAndPan" :data="filterVals(filterReg(uniquenessData))" suffix="%" :download="true" height="70vh"></column-chart>
         <v-divider/>
           <v-card-actions>
             <v-btn color="success" class="ml-auto" @click="dialog=false">Close</v-btn>
@@ -87,7 +87,8 @@ import dataHandlers from "../js/dataHandlers"
       filterKeys: [],
       filter: [],
       dialog: false,
-      maximised: {}
+      maximised: {},
+      config
     }),
     created() {
       this.getData()

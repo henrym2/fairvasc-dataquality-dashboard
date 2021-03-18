@@ -6,7 +6,7 @@
           <template v-slot:title>
             <a style="color:black" @click="navigate('Uniqueness')">Uniqueness</a>
           </template>
-          <column-chart label="Percentage of duplicated data" :colors="[registries.map(r => `#${r.color.toUpperCase()}`)]" suffix="%" :data="filterReg(unique)" :download="true"></column-chart>
+          <column-chart label="Percentage of duplicated data" :library="config.zoomAndPan" :colors="registries.map(r => `#${r.color.toUpperCase()}`)" suffix="%" :data="filterReg(unique)" :download="true"></column-chart>
         </Widget>
       </v-col>
       <v-col>
@@ -14,7 +14,7 @@
             <template v-slot:title>
               <a style="color:black" @click="navigate('Completeness')">Completeness</a>
             </template>
-            <column-chart label="Percentage of missing data" :colors="[registries.map(r => `#${r.color.toUpperCase()}`)]" suffix="%" :data="filterReg(complete)" :download="true"></column-chart>
+            <column-chart label="Percentage of missing data" :library="config.zoomAndPan" :colors="registries.map(r => `#${r.color.toUpperCase()}`)" suffix="%" :data="filterReg(complete)" :download="true"></column-chart>
         </Widget>
       </v-col>
     </v-row>
@@ -24,7 +24,7 @@
             <template v-slot:title>
               <a style="color:black" @click="navigate('Correctness')">Correctness</a>
             </template>
-            <bar-chart label="Percentage of incorrect data" :colors="[registries.map(r => `#${r.color.toUpperCase()}`)]" suffix="%" :data="filterReg(correct)" :download="true"></bar-chart>
+            <bar-chart label="Percentage of incorrect data" :library="config.zoomAndPan" :colors="registries.map(r => `#${r.color.toUpperCase()}`)" suffix="%" :data="filterReg(correct)" :download="true"></bar-chart>
         </Widget>
       </v-col>
     </v-row>
@@ -34,7 +34,7 @@
           <template v-slot:title>
             <a style="color:black" @click="navigate('Consistency')">Consistency</a>
           </template>
-          <column-chart label="Inconsistent data" :colors="[registries.map(r => `#${r.color.toUpperCase()}`)]" :data="filterReg(consistent)" :download="true"></column-chart>
+          <column-chart label="Inconsistent data" :library="config.zoomAndPan" :colors="registries.map(r => `#${r.color.toUpperCase()}`)" :data="filterReg(consistent)" :download="true" suffix="%"></column-chart>
         </Widget>
       </v-col>
     </v-row>
@@ -53,10 +53,10 @@
           </v-toolbar-title>
         </v-toolbar>
         <v-divider/>
-            <column-chart v-if="maximised.id == 0" label="Percentage of duplicated data" :colors="[registries.map(r => `#${r.color.toUpperCase()}`)]" suffix="%" :data="filterReg(unique)" :download="true"></column-chart>
-            <column-chart v-if="maximised.id == 1" label="Percentage of missing data" :colors="[registries.map(r => `#${r.color.toUpperCase()}`)]" :data="filterReg(complete)" :download="true"></column-chart>
-            <bar-chart v-if="maximised.id == 2" label="Percentage of incorrect data" :colors="[registries.map(r => `#${r.color.toUpperCase()}`)]" suffix="%" :data="filterReg(correct)" :download="true"></bar-chart>
-            <column-chart v-if="maximised.id == 3" label="Inconsistent data" :colors="[registries.map(r => `#${r.color.toUpperCase()}`)]" :data="filterReg(consistent)" :download="true"></column-chart>
+          <column-chart v-if="maximised.id == 0" label="Percentage of duplicated data" :library="config.zoomAndPan" :colors="registries.map(r => `#${r.color.toUpperCase()}`)" suffix="%" :data="filterReg(unique)" :download="true" height="70vh" ></column-chart>
+          <column-chart v-if="maximised.id == 1" label="Percentage of missing data" :library="config.zoomAndPan" :colors="registries.map(r => `#${r.color.toUpperCase()}`)" :data="filterReg(complete)" :download="true" height="70vh" ></column-chart>
+          <bar-chart v-if="maximised.id == 2" label="Percentage of incorrect data" :library="config.zoomAndPan" :colors="registries.map(r => `#${r.color.toUpperCase()}`)" suffix="%" :data="filterReg(correct)" :download="true" height="70vh" ></bar-chart>
+          <column-chart v-if="maximised.id == 3" label="Inconsistent data" :library="config.zoomAndPan" :colors="registries.map(r => `#${r.color.toUpperCase()}`)" :data="filterReg(consistent)" :download="true" height="70vh" ></column-chart>
         <v-divider/>
           <v-card-actions>
             <v-btn color="success" class="ml-auto" @click="dialog=false">Close</v-btn>
@@ -87,10 +87,16 @@ import config from "../config"
       consistent: [],
       retry: false,
       dialog: false,
-      maximised: {}
+      maximised: {},
+      config
     }),
     mounted() {
       this.getData()
+    },
+    watch: {
+      set() {
+        this.getData()
+      }
     },
     methods: {
       maximise(toMaximise) {
@@ -115,6 +121,11 @@ import config from "../config"
           this.complete = this.formatData(data[1].value.data) 
           this.consistent = this.formatData(data[2].value.data) 
           this.correct = this.formatData(data[3].value.data) 
+
+          if (this.retry === false) {
+            this.retry = true
+            await this.getData()
+          }
         } catch (e) {
           if (!this.retry) {
             this.getData()

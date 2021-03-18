@@ -217,6 +217,7 @@ export default {
         let { data } = await this.axios.get(`${config.apiURL}/csvList`)
         this.timeSeries = data
         this.selectedTime = data[0]
+        this.selectedDay = new Date(data[0].date).toISOString().substr(0,10)
       } catch (e) {
         console.log(e)
       }
