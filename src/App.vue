@@ -185,7 +185,8 @@ export default {
       text: "",
       state: false,
       color: "primary"
-    }
+    },
+    counts: []
   }),
   computed: {
     pages() {
@@ -193,8 +194,8 @@ export default {
     },
   },
   created() {
-    this.getRegistries()
-    this.getTimeSeries()
+    this.getRegistries().then(() => this.getTimeSeries().then(() => this.getCounts()))
+    // this.getTimeSeries()
   },
   watch: {
     registryList: {
@@ -218,6 +219,17 @@ export default {
         this.timeSeries = data
         this.selectedTime = data[0]
         this.selectedDay = new Date(data[0].date).toISOString().substr(0,10)
+      } catch (e) {
+        console.log(e)
+      }
+    },
+    async getCounts() {
+      try {
+        let { data } = await this.axios.post(`${config.apiURL}/counts`, {
+          registries: this.registryList.map(e => e.Registry), 
+          set: this.selectedTime
+          })
+        this.counts = data
       } catch (e) {
         console.log(e)
       }
