@@ -28,6 +28,7 @@
                         v-on="on" 
                         color="primary" 
                         @click="expand"
+                        class="ml-5"
                     >open_in_full</v-icon>
                 </template>
                 <span>Click to expand</span>
