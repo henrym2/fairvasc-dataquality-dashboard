@@ -125,7 +125,7 @@
     </v-navigation-drawer>
     
     <v-main>
-        <main-page @navigate="(page) => {changePage(metricsList.find(e => e.name === page).id)}" v-if="currentPage == -1" :registries="registryList || []" :set="selectedTime" :counts="counts"></main-page>
+        <main-page @navigate="(page) => {changePage(metricsList.find(e => e.name === page).id)}" v-if="currentPage == -1" :registries="registryList || []" :set="selectedTime" :counts="counts" @error="triggerSnack"></main-page>
         <uniqueness v-if="currentPage == 0" :registries="registryList || []" :set="selectedTime" @error="triggerSnack" :counts="counts" ></uniqueness>
         <consistency v-if="currentPage == 1" :registries="registryList || []" :set="selectedTime" @error="triggerSnack" :counts="counts" ></consistency>
         <completeness v-if="currentPage == 2" :registries="registryList || []" :set="selectedTime" @error="triggerSnack" :counts="counts" ></completeness>
@@ -139,7 +139,7 @@
       {{ snackbar.text }}
       <template v-slot:action="{ attrs }">
         <v-btn
-          color="error"
+          color="white"
           text
           v-bind="attrs"
           @click="snackbar.state = false"
@@ -195,7 +195,11 @@ export default {
   },
   created() {
     this.getRegistries().then(() => this.getTimeSeries().then(() => this.getCounts()))
-    // this.getTimeSeries()
+    window.addEventListener('offline', () => this.triggerSnack({ 
+          text: "Looks like you might be offline, check your network connection and try again.",
+          state: true,
+          color: "warning"  
+        }))  
   },
   watch: {
     registryList: {

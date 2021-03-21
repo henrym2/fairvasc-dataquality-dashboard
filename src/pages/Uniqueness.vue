@@ -149,11 +149,12 @@ import computationHandlers from "../js/computationHandlers.js"
           this.filter = this.filterKeys
           this.loading = false
         } catch (e) {
-          this.loading = false
+          this.error()
           console.log(e)
         }
       },
       error() {
+        this.loading = false
         this.$emit("error", 
         { 
           text: "There was an error getting data for this set",

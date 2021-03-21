@@ -135,9 +135,18 @@ import config from "../config"
             this.getData()
             this.retry = true
           }
-          this.loading = false
+          this.error()
           console.log(e)
         }
+      },
+      error() {
+        this.loading = false
+        this.$emit("error", 
+        { 
+          text: "There was an error getting data for this set",
+          state: true,
+          color: "error"  
+        })
       },
       navigate(page) {
         this.$emit("navigate", page)
