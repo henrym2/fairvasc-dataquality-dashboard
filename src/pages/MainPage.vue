@@ -2,7 +2,7 @@
   <v-container>
     <v-row>
       <v-col>
-        <Widget subtitle="Percentage of duplicated entries" :id=0 @expand="maximise" title="Uniqueness">
+        <Widget subtitle="Percentage of duplicated entries" :id=0 @expand="maximise" title="Uniqueness" :loading="loading">
           <template v-slot:title>
             <a style="color:black" @click="navigate('Uniqueness')">Uniqueness</a>
           </template>
@@ -10,7 +10,7 @@
         </Widget>
       </v-col>
       <v-col>
-        <Widget subtitle="Percentage of empty or missing datapoints across all registires" :id=1 @expand="maximise" title="Completeness">
+        <Widget subtitle="Percentage of empty or missing datapoints across all registires" :id=1 @expand="maximise" title="Completeness" :loading="loading">
             <template v-slot:title>
               <a style="color:black" @click="navigate('Completeness')">Completeness</a>
             </template>
@@ -20,7 +20,7 @@
     </v-row>
     <v-row>
       <v-col>
-        <Widget subtitle="Percentage of incorrect values" :id=2 @expand="maximise" title="Correctness">
+        <Widget subtitle="Percentage of incorrect values" :id=2 @expand="maximise" title="Correctness" :loading="loading">
             <template v-slot:title>
               <a style="color:black" @click="navigate('Correctness')">Correctness</a>
             </template>
@@ -30,7 +30,7 @@
     </v-row>
     <v-row>
       <v-col>
-        <Widget subtitle="Percentage of incorrectly formatted data" :id=3 @expand="maximise" title="Consistency">
+        <Widget subtitle="Percentage of incorrectly formatted data" :id=3 @expand="maximise" title="Consistency" :loading="loading">
           <template v-slot:title>
             <a style="color:black" @click="navigate('Consistency')">Consistency</a>
           </template>
@@ -89,7 +89,8 @@ import config from "../config"
       retry: false,
       dialog: false,
       maximised: {},
-      config
+      config,
+      loading: false
     }),
     mounted() {
       this.getData()
@@ -110,6 +111,7 @@ import config from "../config"
       },
       async getData() {
         try {
+          this.loading = true
           let promises = ['unique', 'complete', 'consistency', 'correct']
           promises = promises.map(e => this.axios.post(`${config.apiURL}/totals/${e}`, 
             {
@@ -127,11 +129,13 @@ import config from "../config"
             this.retry = true
             await this.getData()
           }
+          this.loading = false
         } catch (e) {
           if (!this.retry) {
             this.getData()
             this.retry = true
           }
+          this.loading = false
           console.log(e)
         }
       },

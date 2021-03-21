@@ -2,19 +2,19 @@
   <v-container>
     <v-row>
       <v-col>
-        <Widget title="Consistency Data Over Time" subtitle="Total average percentage of consistent data over time" :id=0 @expand="maximise">
+        <Widget title="Consistency Data Over Time" subtitle="Total average percentage of consistent data over time" :id=0 @expand="maximise" :loading="loading">
           <line-chart :library="config.zoomAndPan" :data="filterReg(consistencyOverTime)" :download="true" suffix="%"></line-chart>
         </Widget>
       </v-col>
       <v-col>
-        <Widget title="Average Total Consistency" subtitle="Total average percentage of cosistent data" :id=1 @expand="maximise">
+        <Widget title="Average Total Consistency" subtitle="Total average percentage of cosistent data" :id=1 @expand="maximise" :loading="loading">
             <bar-chart :data="averageAll(filterReg(consistencyData))" :download="true" suffix="%"></bar-chart>
         </Widget>
       </v-col>
     </v-row>
     <v-row>
       <v-col>
-        <Widget title="Consistency percentage per field" subtitle="Total consistent data per each individual field in the dataset" :id=2 @expand="maximise">
+        <Widget title="Consistency percentage per field" subtitle="Total consistent data per each individual field in the dataset" :id=2 @expand="maximise" :loading="loading">
            <template v-slot:controls>
               <field-value-graph-controls
                 :filter.sync="filter"
@@ -93,7 +93,8 @@ import computationHandlers from "../js/computationHandlers.js"
       dialog: false,
       maximised: {},
       config,
-      showCounts: false
+      showCounts: false,
+      loading: false
     }),
     methods: {
       maximise(toMaximise) {
@@ -123,17 +124,21 @@ import computationHandlers from "../js/computationHandlers.js"
       },
       async getConsistencyOverTime() {
         try {
+          this.loading = true
           let {data} = await this.axios.post(`${config.apiURL}/timeData`, {
             'registries': this.registries.map(e => e.Registry),
             'metric': 'consistency'
           })
           this.consistencyOverTime = data
+          this.loading = false
         } catch (e) {
           console.log(e)
+          this.loading = false
         }
       },
       async getData() {
         try {
+          this.loading = true
           let {data} = await this.axios.post(`${config.apiURL}/consistency`, 
           { 
             registries: this.registries.map(e => e.Registry),
@@ -144,8 +149,10 @@ import computationHandlers from "../js/computationHandlers.js"
           })
           this.filterKeys = this.extractKeys(this.consistencyData[0].data)
           this.filter = this.filterKeys
+          this.loading = false
         } catch (e) {
           console.log(e)
+          this.loading = false
         }
       },
       error() {

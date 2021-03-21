@@ -2,19 +2,19 @@
   <v-container>
     <v-row>
       <v-col>
-        <Widget title="Average Correctness of Data Over Time" subtitle="Average total correctness of data over time" :id=0 @expand="maximise">
+        <Widget title="Average Correctness of Data Over Time" subtitle="Average total correctness of data over time" :id=0 @expand="maximise" :loading="loading">
           <line-chart :data="filterReg(correctnessOverTime)" :library="config.zoomAndPan" :download="true" suffix="%"></line-chart>
         </Widget>
       </v-col>
       <v-col>
-        <Widget title="Average total correctness" subtitle="Average total correctness of the current dataset" :id=1 @expand="maximise">
+        <Widget title="Average total correctness" subtitle="Average total correctness of the current dataset" :id=1 @expand="maximise" :loading=loading>
             <pie-chart :data="averageAll(filterReg(correctnessData))" :download="true" suffix="%"></pie-chart>
         </Widget>
       </v-col>
     </v-row>
     <v-row>
       <v-col>
-        <Widget title="Correctness percentage per field" subtitle="Percentage of correct data per field in the dataset" :id=2 @expand="maximise">
+        <Widget title="Correctness percentage per field" subtitle="Percentage of correct data per field in the dataset" :id=2 @expand="maximise" :loading="loading">
           <template v-slot:controls>
               <field-value-graph-controls
                 :filter.sync="filter"
@@ -76,7 +76,6 @@ import computationHandlers from "../js/computationHandlers.js"
       registries: Array,
       set: {},
       counts: Object
-
     },
     created() {
       this.getData()
@@ -95,7 +94,8 @@ import computationHandlers from "../js/computationHandlers.js"
       dialog: false,
       maximised: {},
       config,
-      showCounts: false
+      showCounts: false,
+      loading: false
     }),
     methods: {
       maximise(toMaximise) {
@@ -125,17 +125,21 @@ import computationHandlers from "../js/computationHandlers.js"
       },
       async getCorrectnessOverTime() {
         try {
+          this.loading = true
           let {data} = await this.axios.post(`${config.apiURL}/timeData`, {
             'registries': this.registries.map(e => e.Registry),
             'metric': 'correct'
           })
           this.correctnessOverTime = data
+          this.loading = false
         } catch (e) {
+          this.loading = false
           console.log(e)
         }
       },
       async getData() {
         try {
+          this.loading = true
           let {data} = await this.axios.post(`${config.apiURL}/correctness`, 
           { 
             registries: this.registries.map(e => e.Registry),
@@ -146,8 +150,10 @@ import computationHandlers from "../js/computationHandlers.js"
           })
           this.filterKeys = this.extractKeys(this.correctnessData[0].data)
           this.filter = this.filterKeys
+          this.loading = false
         }
         catch (e) {
+          this.loading = false
           console.log(e)
         }
       },

@@ -2,19 +2,19 @@
   <v-container>
     <v-row>
       <v-col>
-        <Widget title="Total missing data" subtitle="Total percentage of missing data" @expand="maximise" :id=0>
+        <Widget title="Total missing data" subtitle="Total percentage of missing data" @expand="maximise" :id=0 :loading="loading">
           <pie-chart :data="averageAll(filterReg(completenessData))" :legend="true" suffix="%" :download="true"></pie-chart>
         </Widget>
       </v-col>
       <v-col>
-        <Widget title="Total missing data over time" subtitle="Total percentage of missing data over a period of time" @expand="maximise" :id=1>
+        <Widget title="Total missing data over time" subtitle="Total percentage of missing data over a period of time" @expand="maximise" :id=1 :loading="loading">
           <line-chart :data="filterReg(completenessOverTime)" :library="config.zoomAndPan" :legend="true" suffix="%" :download="true"></line-chart>
         </Widget>
       </v-col>
     </v-row>
     <v-row>
       <v-col>
-        <Widget title="Missing data per field" subtitle="Percentage of missing data in individal fields in the dataset" @expand="maximise" :id=2>
+        <Widget title="Missing data per field" subtitle="Percentage of missing data in individal fields in the dataset" @expand="maximise" :id=2 :loading="loading">
             <template v-slot:controls>
               <field-value-graph-controls
                 :filter.sync="filter"
@@ -83,7 +83,8 @@ import computationHandlers from "../js/computationHandlers.js"
       dialog: false,
       maximised: {},
       config,
-      showCounts: false
+      showCounts: false,
+      loading: false
     }),
     mounted() {
       this.getData()
@@ -123,17 +124,21 @@ import computationHandlers from "../js/computationHandlers.js"
       },
       async getCompletenessOverTime() {
         try {
+          this.loading = true
           let {data} = await this.axios.post(`${config.apiURL}/timeData`, {
             'registries': this.registries.map(e => e.Registry),
             'metric': 'complete'
           })
           this.completenessOverTime = data  
+          this.loading = false
         } catch (e) {
           console.log(e)
+          this.loading = false
         }
       },
       async getData() {
         try {
+          this.loading = true
           let {data} = await this.axios.post(`${config.apiURL}/completeness`, 
             { registries: this.registries.map(e => e.Registry),
               set: this.set })
@@ -142,7 +147,9 @@ import computationHandlers from "../js/computationHandlers.js"
           })
           this.filterKeys = this.extractKeys(this.completenessData[0].data)
           this.filter = this.filterKeys
+          this.loading = false
         } catch (e) {
+          this.loading = false
           console.log(e)
         }
       },

@@ -1,6 +1,7 @@
 <template>
     <v-card
         elevation="4"
+        :loading="loading"
     >
         <v-toolbar flat>
             <v-toolbar-title>
@@ -47,7 +48,8 @@ export default {
     props: {
         "title": String,
         "subtitle": String,
-        "id": Number
+        "id": Number,
+        "loading": Boolean
     },
     methods: {
         expand() {

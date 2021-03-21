@@ -2,19 +2,19 @@
   <v-container>
     <v-row>
       <v-col>
-        <Widget title="Unique data percentage over time" subtitle="Average total of non-duplicate data over time" :id=0 @expand="maximise">
+        <Widget title="Unique data percentage over time" subtitle="Average total of non-duplicate data over time" :id=0 @expand="maximise" :loading="loading">
           <line-chart :data="filterReg(uniqueOverTime)" :library="config.zoomAndPan" :download="true" suffix="%"></line-chart>
         </Widget>
       </v-col>
       <v-col>
-        <Widget title="Average unique data percentage" subtitle="Average unique data percentage of the current dataset" :id=1 @expand="maximise">
+        <Widget title="Average unique data percentage" subtitle="Average unique data percentage of the current dataset" :id=1 @expand="maximise" :loading="loading">
             <pie-chart :data="averageAll(filterReg(uniquenessData))" :download="true" suffix="%"></pie-chart>
         </Widget>
       </v-col>
     </v-row>
     <v-row>
       <v-col>
-        <Widget title="Uniqueness per field" subtitle="Percentage of non-duplicated data per field in the dataset" :id=2 @expand="maximise">
+        <Widget title="Uniqueness per field" subtitle="Percentage of non-duplicated data per field in the dataset" :id=2 @expand="maximise" :loading="loading">
             <template v-slot:controls>
               <field-value-graph-controls
                 :filter.sync="filter"
@@ -84,7 +84,8 @@ import computationHandlers from "../js/computationHandlers.js"
       dialog: false,
       maximised: {},
       config,
-      showCounts: false
+      showCounts: false,
+      loading: false
     }),
     created() {
       this.getData()
@@ -123,17 +124,21 @@ import computationHandlers from "../js/computationHandlers.js"
       },
       async getUniqueOverTime() {
         try {
+          this.loading = true
           let {data} = await this.axios.post(`${config.apiURL}/timeData`, {
             'registries': this.registries.map(e => e.Registry),
             'metric': 'unique'
           })
           this.uniqueOverTime = data
+          this.loading = false
         } catch (e) {
           console.log(e)
+          this.loading = false
         }
       },
       async getData() {
         try {
+          this.loading = true
           let {data} = await this.axios.post(`${config.apiURL}/uniqueness`, 
             { registries: this.registries.map(e => e.Registry),
               set: this.set})
@@ -142,7 +147,9 @@ import computationHandlers from "../js/computationHandlers.js"
           })
           this.filterKeys = this.extractKeys(this.uniquenessData[0].data)
           this.filter = this.filterKeys
+          this.loading = false
         } catch (e) {
+          this.loading = false
           console.log(e)
         }
       },

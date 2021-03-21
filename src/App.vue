@@ -126,10 +126,10 @@
     
     <v-main>
         <main-page @navigate="(page) => {changePage(metricsList.find(e => e.name === page).id)}" v-if="currentPage == -1" :registries="registryList || []" :set="selectedTime" :counts="counts"></main-page>
-        <uniqueness v-if="currentPage == 0" :registries="registryList || []" :set="selectedTime" @error=triggerSnack :counts=counts ></uniqueness>
-        <consistency v-if="currentPage == 1" :registries="registryList || []" :set="selectedTime" @error=triggerSnack :counts=counts ></consistency>
-        <completeness v-if="currentPage == 2" :registries="registryList || []" :set="selectedTime" @error=triggerSnack :counts=counts ></completeness>
-        <correctness v-if="currentPage == 3" :registries="registryList || []" :set="selectedTime" @error=triggerSnack :counts=counts ></correctness>
+        <uniqueness v-if="currentPage == 0" :registries="registryList || []" :set="selectedTime" @error="triggerSnack" :counts="counts" ></uniqueness>
+        <consistency v-if="currentPage == 1" :registries="registryList || []" :set="selectedTime" @error="triggerSnack" :counts="counts" ></consistency>
+        <completeness v-if="currentPage == 2" :registries="registryList || []" :set="selectedTime" @error="triggerSnack" :counts="counts" ></completeness>
+        <correctness v-if="currentPage == 3" :registries="registryList || []" :set="selectedTime" @error="triggerSnack" :counts="counts" ></correctness>
     </v-main>
     <v-snackbar
       v-model="snackbar.state"
