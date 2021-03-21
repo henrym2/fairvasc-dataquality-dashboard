@@ -46,7 +46,7 @@
         <v-divider/>
             <line-chart v-if="maximised.id == 0" :library="config.zoomAndPan" :data="filterReg(uniqueOverTime)" :legend="true" suffix="%" :download="true" height="70vh"></line-chart>
             <pie-chart v-if="maximised.id == 1" :data="averageAll(filterReg(uniquenessData))" :legend="true" suffix="%" :download="true"></pie-chart>
-            <column-chart v-if="maximised.id == 2" :library="config.zoomAndPan" :data="filterVals(filterReg(uniquenessData))" suffix="%" :download="true" height="70vh"></column-chart>
+            <column-chart v-if="maximised.id == 2" :library="config.zoomAndPan" :data="dataType(filterVals(filterReg(uniquenessData)), showCounts)" :suffix="showCounts ? '' : '%'" :download="true" height="70vh"></column-chart>
         <v-divider/>
           <v-card-actions>
             <v-btn color="success" class="ml-auto" @click="dialog=false">Close</v-btn>
