@@ -16,26 +16,16 @@
       <v-col>
         <Widget title="Uniqueness per field" subtitle="Percentage of non-duplicated data per field in the dataset" :id=2 @expand="maximise">
             <template v-slot:controls>
-              <v-select
-              style="max-width: 15rem"
-                :items="filterKeys"
-                v-model="filter"
-                multiple
+              <field-value-graph-controls
+                :filter.sync="filter"
+                :filterKeys="filterKeys"
+                :showCounts="showCounts"
+                @countClick="(v) => showCounts = v"
+                @filtered="(f) => filter = f"
               >
-                <template v-slot:selection="{ item, index}">
-                  <v-chip v-if="index === 0">
-                    <span> {{item}}</span>
-                  </v-chip>
-                  <span
-                    v-if="index === 1"
-                    class="grey--text caption"
-                  >
-                    (+{{ filter.length - 1 }})
-                  </span>
-                </template>
-              </v-select>
+              </field-value-graph-controls>
             </template>
-            <column-chart :data="filterVals(filterReg(uniquenessData))" :library="config.zoomAndPan" :download="true" suffix="%"></column-chart>
+            <column-chart :data="dataType(filterVals(filterReg(uniquenessData)), showCounts)" :library="config.zoomAndPan" :download="true" :suffix="showCounts ? '' : '%'"></column-chart>
         </Widget>
       </v-col>
     </v-row>
@@ -68,17 +58,22 @@
 
 <script>
 import Widget from "../components/Widget.vue"
+import fieldValueGraphControls from "../components/fieldValueGraphControls.vue"
+
 import config from "../config"
 import dataHandlers from "../js/dataHandlers"
+import computationHandlers from "../js/computationHandlers.js"
 
   export default {
     name: 'Uniqueness',
     components: {
-      Widget
+      Widget,
+      fieldValueGraphControls
     },
     props: {
       registries: Array,
-      set: {}
+      set: {},
+      counts: Object
 
     },
     data: () => ({
@@ -88,7 +83,8 @@ import dataHandlers from "../js/dataHandlers"
       filter: [],
       dialog: false,
       maximised: {},
-      config
+      config,
+      showCounts: false
     }),
     created() {
       this.getData()
@@ -103,6 +99,21 @@ import dataHandlers from "../js/dataHandlers"
       maximise(toMaximise) {
         this.maximised = toMaximise
         this.dialog = true
+      },
+      dataType(data, type) {
+        if (type) {
+          return data.reduce((acc, cur) => {
+            let tmp = {
+              name: cur.name,
+              data: computationHandlers.retrieveQuanta(cur.data, this.counts[cur.name]['unique_ids_total'])
+            }
+            acc.push(tmp)
+            console.log(tmp)
+            return acc
+          }, [])
+        } else {
+          return data
+        }
       },
       filterReg (arr) {
         return dataHandlers.filterReg(arr, this.registries)

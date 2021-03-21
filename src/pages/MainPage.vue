@@ -78,7 +78,8 @@ import config from "../config"
     props: {
       registries: Array,
       pages: Array,
-      set: Object
+      set: Object,
+      counts: Object
     },
     data: () => ({
       unique: [],

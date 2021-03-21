@@ -16,26 +16,16 @@
       <v-col>
         <Widget title="Missing data per field" subtitle="Percentage of missing data in individal fields in the dataset" @expand="maximise" :id=2>
             <template v-slot:controls>
-            <v-select
-            style="max-width: 15rem"
-              :items="filterKeys"
-              v-model="filter"
-              multiple
-            >
-              <template v-slot:selection="{ item, index}">
-                <v-chip v-if="index === 0">
-                  <span> {{item}}</span>
-                </v-chip>
-                <span
-                  v-if="index === 1"
-                  class="grey--text caption"
-                >
-                  (+{{ filter.length - 1 }})
-                </span>
-              </template>
-            </v-select>
+              <field-value-graph-controls
+                :filter.sync="filter"
+                :filterKeys="filterKeys"
+                :showCounts="showCounts"
+                @countClick="(v) => showCounts = v"
+                @filtered="(f) => filter = f"
+              >
+              </field-value-graph-controls>
           </template>
-            <column-chart :data="filterVals(filterReg(completenessData))" :library="config.zoomAndPan" :download="true" suffix="%"></column-chart>
+            <column-chart :data="dataType(filterVals(filterReg(completenessData)), showCounts)" :library="config.zoomAndPan" :download="true" :suffix="showCounts ? '' : '%'"></column-chart>
         </Widget>
       </v-col>
     </v-row>
@@ -56,7 +46,7 @@
         <v-divider/>
             <pie-chart v-if="maximised.id == 0" :data="averageAll(filterReg(completenessData))" :legend="true" suffix="%" :download="true"></pie-chart>
             <line-chart v-if="maximised.id == 1" :library="config.zoomAndPan" :data="filterReg(completenessOverTime)" :legend="true" suffix="%" :download="true" height="70vh"></line-chart>
-            <column-chart v-if="maximised.id == 2" :library="config.zoomAndPan" :data="filterVals(filterReg(completenessData))" suffix="%" :download="true" height="70vh"></column-chart>
+            <column-chart v-if="maximised.id == 2" :data="dataType(filterVals(filterReg(completenessData)), showCounts)" :library="config.zoomAndPan" :download="true" :suffix="showCounts ? '' : '%'" height="70vh"></column-chart>
         <v-divider/>
           <v-card-actions>
             <v-btn color="success" class="ml-auto" @click="dialog=false">Close</v-btn>
@@ -68,17 +58,22 @@
 
 <script>
 import Widget from "../components/Widget.vue"
+import fieldValueGraphControls from "../components/fieldValueGraphControls.vue"
+
 import config from "../config"
 import dataHandlers from "../js/dataHandlers.js"
+import computationHandlers from "../js/computationHandlers.js"
 
   export default {
     name: 'Completeness',
     components: {
-      Widget
+      Widget,
+      fieldValueGraphControls
     },
     props: {
       registries: Array,
-      set: {}
+      set: {},
+      counts: Object
     },
     data: () => ({
       completenessData: [],
@@ -87,11 +82,13 @@ import dataHandlers from "../js/dataHandlers.js"
       filter: [],
       dialog: false,
       maximised: {},
-      config
+      config,
+      showCounts: false
     }),
     mounted() {
       this.getData()
       this.getCompletenessOverTime()
+      console.log(this.$vuetify.breakpoint.mobile)
     },
     watch: {
       set() {
@@ -102,6 +99,21 @@ import dataHandlers from "../js/dataHandlers.js"
       maximise(toMaximise) {
         this.maximised = toMaximise
         this.dialog = true
+      },
+      dataType(data, type) {
+        if (type) {
+          return data.reduce((acc, cur) => {
+            let tmp = {
+              name: cur.name,
+              data: computationHandlers.retrieveQuanta(cur.data, this.counts[cur.name]['unique_ids_total'])
+            }
+            acc.push(tmp)
+            console.log(tmp)
+            return acc
+          }, [])
+        } else {
+          return data
+        }
       },
       filterReg (arr) {
         return dataHandlers.filterReg(arr, this.registries)
