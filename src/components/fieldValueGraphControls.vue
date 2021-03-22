@@ -27,6 +27,16 @@
               @input="selected"
               multiple
             >
+              <template v-slot:prepend-item>
+                  <v-list-item>
+                      <v-list-item-action>
+                          <v-checkbox @change="selectAll"></v-checkbox>
+                      </v-list-item-action>
+                      <v-list-item-title>
+                          Select all
+                      </v-list-item-title>
+                  </v-list-item>
+              </template>
               <template v-slot:selection="{ item, index}">
                 <v-chip v-if="index === 0">
                   <span> {{item}}</span>
