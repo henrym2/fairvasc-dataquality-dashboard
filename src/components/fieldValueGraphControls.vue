@@ -92,9 +92,6 @@ export default {
          selectedFilt: this.filterKeys,
      }
  },
- mounted: function() {
-     console.log(this.filter, this.selectedFilt)
- },
  methods: {
     showClicked () {
         this.$emit("countClick", this.count)        
