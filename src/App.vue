@@ -53,7 +53,7 @@
       app
     >
     <v-list>
-      <v-list-item @click="changePage(-1)" >
+      <v-list-item @click="changePage({id: -1})" >
         <v-list-item-icon><v-icon>home</v-icon></v-list-item-icon>
         <v-list-item-title>Dashboard</v-list-item-title>
       </v-list-item>
@@ -95,7 +95,7 @@
         <v-expansion-panel-content>
         <v-list>
           <v-list-item-group>
-          <v-list-item class="p-0" v-for="metric in metricsList" :key="metric.id" @click.stop="changePage(metric.id)">
+          <v-list-item class="p-0" v-for="metric in metricsList" :key="metric.id" @click.stop="changePage(metric)">
             <v-list-item-title>{{metric.name}}</v-list-item-title>
             <v-list-item-icon><v-icon>{{metric.icon}}</v-icon></v-list-item-icon>
 
@@ -125,11 +125,8 @@
     </v-navigation-drawer>
     
     <v-main>
-        <main-page @navigate="(page) => {changePage(metricsList.find(e => e.name === page).id)}" v-if="currentPage == -1" :registries="registryList || []" :set="selectedTime" :counts="counts" @error="triggerSnack"></main-page>
-        <uniqueness v-if="currentPage == 0" :registries="registryList || []" :set="selectedTime" @error="triggerSnack" :counts="counts" ></uniqueness>
-        <consistency v-if="currentPage == 1" :registries="registryList || []" :set="selectedTime" @error="triggerSnack" :counts="counts" ></consistency>
-        <completeness v-if="currentPage == 2" :registries="registryList || []" :set="selectedTime" @error="triggerSnack" :counts="counts" ></completeness>
-        <correctness v-if="currentPage == 3" :registries="registryList || []" :set="selectedTime" @error="triggerSnack" :counts="counts" ></correctness>
+        <main-page @navigate="(page) => {changePage(metricsList.find(e => e.name === page))}" v-if="currentPage === -1" :registries="registryList || []" :set="selectedTime" :counts="counts" @error="triggerSnack"></main-page>
+        <metrics-page v-if="metric !== ''" :registries="registryList || []" :set="selectedTime" @error="triggerSnack" :counts="counts" :metric="metric"></metrics-page>
     </v-main>
     <v-snackbar
       v-model="snackbar.state"
@@ -153,6 +150,8 @@
 
 <script>
 import Pages from './pages/pages.js'
+import MetricsPage from "./components/MetricsPage.vue"
+
 import config from "./config.js"
 var randomColor = () => Math.floor(Math.random()*16777215).toString(16);
 const datesAreOnSameDay = (first, second) =>
@@ -163,22 +162,25 @@ const datesAreOnSameDay = (first, second) =>
 export default {
   name: 'App',
 
-  components: Pages,
-
+  components: {
+    ...Pages,
+    MetricsPage
+  },
   data: () => ({
     drawer: true,
     registryList: [],
     metricsList: [
-      {id: 0, name: "Uniqueness", icon: "fingerprint",},
-      {id: 1, name: "Consistency", icon: "panorama_fish_eye"},
-      {id: 2, name: "Completeness", icon: "assignment"},
-      {id: 3, name: "Correctness", icon: "check_circle"}
+      {id: 0, name: "Uniqueness", icon: "fingerprint", value: "unique"},
+      {id: 1, name: "Consistency", icon: "panorama_fish_eye", value: "consistency"},
+      {id: 2, name: "Completeness", icon: "assignment", value: "complete"},
+      {id: 3, name: "Correctness", icon: "check_circle", value: "correct"}
     ],
     timeSeries: [],
     daySeries: [],
     selectedDay: new Date().toISOString().substr(0,10),
     selectedTime: {},
     currentPage: -1,
+    metric: "",
     multi: false,
     file: null,
     snackbar: {
@@ -260,8 +262,9 @@ export default {
         }
       }
     },
-    changePage(id) {
-      this.currentPage = id
+    changePage(metric) {
+      this.currentPage = metric.id
+      this.metric = metric.value || ''
     },
     selectAll(choice) {
       this.registryList = this.registryList.map(reg => ({

@@ -3,12 +3,12 @@
     <v-row>
       <v-col>
         <Widget title="Average Correctness of Data Over Time" subtitle="Average total correctness of data over time" :id=0 @expand="maximise" :loading="loading">
-          <line-chart :data="filterReg(correctnessOverTime)" :library="config.zoomAndPan" :download="true" suffix="%"></line-chart>
+          <line-chart :data="filterReg(dataOverTime)" :library="config.zoomAndPan" :download="true" suffix="%"></line-chart>
         </Widget>
       </v-col>
       <v-col>
         <Widget title="Average total correctness" subtitle="Average total correctness of the current dataset" :id=1 @expand="maximise" :loading=loading>
-            <pie-chart :data="averageAll(filterReg(correctnessData))" :download="true" suffix="%"></pie-chart>
+            <pie-chart :data="averageAll(filterReg(data))" :download="true" suffix="%"></pie-chart>
         </Widget>
       </v-col>
     </v-row>
@@ -25,7 +25,7 @@
               >
               </field-value-graph-controls>
           </template>
-            <column-chart :data="dataType(filterVals(filterReg(correctnessData)), showCounts)" :library="config.zoomAndPan" :download="true" :suffix="showCounts ? '' : '%'"></column-chart>
+            <column-chart :data="dataType(filterVals(filterReg(data)), showCounts)" :library="config.zoomAndPan" :download="true" :suffix="showCounts ? '' : '%'"></column-chart>
         </Widget>
       </v-col>
     </v-row>
@@ -44,9 +44,9 @@
           </v-toolbar-title>
         </v-toolbar>
         <v-divider/>
-            <line-chart v-if="maximised.id == 0" :library="config.zoomAndPan" :data="filterReg(correctnessOverTime)" :legend="true" suffix="%" :download="true" height="70vh"></line-chart>
-            <pie-chart v-if="maximised.id == 1" :data="averageAll(filterReg(correctnessData))" :legend="true" suffix="%" :download="true"></pie-chart>
-            <column-chart v-if="maximised.id == 2" :library="config.zoomAndPan" :data="dataType(filterVals(filterReg(correctnessData)), showCounts)" :suffix="showCounts ? '' : '%'" :download="true" height="70vh"></column-chart>
+            <line-chart v-if="maximised.id == 0" :library="config.zoomAndPan" :data="filterReg(dataOverTime)" :legend="true" suffix="%" :download="true" height="70vh"></line-chart>
+            <pie-chart v-if="maximised.id == 1" :data="averageAll(filterReg(data))" :legend="true" suffix="%" :download="true"></pie-chart>
+            <column-chart v-if="maximised.id == 2" :library="config.zoomAndPan" :data="dataType(filterVals(filterReg(data)), showCounts)" :suffix="showCounts ? '' : '%'" :download="true" height="70vh"></column-chart>
         <v-divider/>
           <v-card-actions>
             <v-btn color="success" class="ml-auto" @click="dialog=false">Close</v-btn>
@@ -75,7 +75,8 @@ import computationHandlers from "../js/computationHandlers.js"
     props: {
       registries: Array,
       set: {},
-      counts: Object
+      counts: Object,
+      metric: String
     },
     created() {
       this.getData()
@@ -84,11 +85,16 @@ import computationHandlers from "../js/computationHandlers.js"
     watch: {
       set() {
         this.getData()
+        this.getCorrectnessOverTime()
+      },
+      metric() {
+          this.getData()
+          this.getCorrectnessOverTime()
       }
     },
     data: () => ({
-      correctnessData: [],
-      correctnessOverTime: [],
+      data: [],
+      dataOverTime: [],
       filterKeys: [],
       filter: [],
       dialog: false,
@@ -110,7 +116,6 @@ import computationHandlers from "../js/computationHandlers.js"
               data: computationHandlers.retrieveQuanta(cur.data, this.counts[cur.name]['unique_ids_total'])
             }
             acc.push(tmp)
-            console.log(tmp)
             return acc
           }, [])
         } else {
@@ -128,9 +133,9 @@ import computationHandlers from "../js/computationHandlers.js"
           this.loading = true
           let {data} = await this.axios.post(`${config.apiURL}/timeData`, {
             'registries': this.registries.map(e => e.Registry),
-            'metric': 'correct'
+            'metric': this.metric
           })
-          this.correctnessOverTime = data
+          this.dataOverTime = data
           this.loading = false
         } catch (e) {
           this.error()
@@ -140,15 +145,15 @@ import computationHandlers from "../js/computationHandlers.js"
       async getData() {
         try {
           this.loading = true
-          let {data} = await this.axios.post(`${config.apiURL}/correctness`, 
+          let {data} = await this.axios.post(`${config.apiURL}/${this.metric}`, 
           { 
             registries: this.registries.map(e => e.Registry),
             set: this.set
           })
-          this.correctnessData = Object.keys(data).map(e => {
+          this.data = Object.keys(data).map(e => {
             return {name: e, data: data[e]}
           })
-          this.filterKeys = this.extractKeys(this.correctnessData[0].data)
+          this.filterKeys = this.extractKeys(this.data[0].data)
           this.filter = this.filterKeys
           this.loading = false
         }
