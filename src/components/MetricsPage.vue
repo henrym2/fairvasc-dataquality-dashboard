@@ -131,10 +131,7 @@ import computationHandlers from "../js/computationHandlers.js"
       async getCorrectnessOverTime() {
         try {
           this.loading = true
-          let {data} = await this.axios.post(`${config.apiURL}/timeData`, {
-            'registries': this.registries.map(e => e.Registry),
-            'metric': this.metric
-          })
+          let {data} = await this.axios.get(`${config.apiURL}/timeData/${this.metric}?registries=${this.registries.map(e => e.Registry).join(',')}`)
           this.dataOverTime = data
           this.loading = false
         } catch (e) {
@@ -145,11 +142,8 @@ import computationHandlers from "../js/computationHandlers.js"
       async getData() {
         try {
           this.loading = true
-          let {data} = await this.axios.post(`${config.apiURL}/${this.metric}`, 
-          { 
-            registries: this.registries.map(e => e.Registry),
-            set: this.set
-          })
+          let {data} = await this.axios.get(
+            `${config.apiURL}/metrics/${this.metric}?registries=${this.registries.map(e => e.Registry).join(',')}&set=${this.set.path}`)
           this.data = Object.keys(data).map(e => {
             return {name: e, data: data[e]}
           })

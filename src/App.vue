@@ -231,10 +231,7 @@ export default {
     },
     async getCounts() {
       try {
-        let { data } = await this.axios.post(`${config.apiURL}/counts`, {
-          registries: this.registryList.map(e => e.Registry), 
-          set: this.selectedTime
-          })
+        let { data } = await this.axios.get(`${config.apiURL}/counts?registries=${this.registryList.map(e => e.Registry).join(',')}&set=${this.selectedTime.path || undefined}`)
         this.counts = data
       } catch (e) {
         console.log(e)
