@@ -125,8 +125,9 @@ import computationHandlers from "../js/computationHandlers.js"
         this.dialog = true
       },
       dataType(data, type) {
+        let out = data
         if (type) {
-          return data.reduce((acc, cur) => {
+          out = data.reduce((acc, cur) => {
             let tmp = {
               name: cur.name,
               data: computationHandlers.retrieveQuanta(cur.data, this.counts[cur.name]['unique_ids_total'])
@@ -134,9 +135,8 @@ import computationHandlers from "../js/computationHandlers.js"
             acc.push(tmp)
             return acc
           }, [])
-        } else {
-          return data
-        }
+        } 
+        return out
       },
       filterReg (arr) {
         return dataHandlers.filterReg(arr, this.registries)

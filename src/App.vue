@@ -1,5 +1,6 @@
 <template>
   <v-app>
+    <!-- Toolbar start -->
     <v-app-bar
       app
       color="primary"
@@ -48,6 +49,8 @@
       </v-menu>
     </v-toolbar-items>
     </v-app-bar>
+    <!-- Toolbar end -->
+    <!-- Drawer start -->
     <v-navigation-drawer
       v-model="drawer"
       app
@@ -123,7 +126,8 @@
     </v-list>
 
     </v-navigation-drawer>
-    
+    <!-- Drawer start -->
+    <!-- Content start -->
     <v-main>
         <main-page @navigate="(page) => {changePage(metricsList.find(e => e.name === page))}" v-if="currentPage === -1" :registries="registryList || []" :set="selectedTime" :counts="counts" @error="triggerSnack"></main-page>
         <metrics-page 
@@ -136,6 +140,7 @@
           :events="timeSeries"
           ></metrics-page>
     </v-main>
+    <!-- Content end -->
     <v-snackbar
       v-model="snackbar.state"
       :color="snackbar.color"
@@ -161,7 +166,16 @@ import Pages from './pages/pages.js'
 import MetricsPage from "./components/MetricsPage.vue"
 
 import config from "./config.js"
-var randomColor = () => Math.floor(Math.random()*16777215).toString(16);
+/**
+ * @description Generate a random color value in hex
+ */
+var randomColor = () => `#${Math.floor(Math.random()*16777215).toString(16)}`;
+/**
+ * @description Filter handler for checking if two dates are on the same day
+ * @param {Date} first First date to compare
+ * @param {Date} second Second date to compare
+ * @returns {Boolean} 
+ */
 const datesAreOnSameDay = (first, second) =>
     first.getFullYear() === second.getFullYear() &&
     first.getMonth() === second.getMonth() &&
@@ -199,10 +213,17 @@ export default {
     counts: {}
   }),
   computed: {
+    /**
+     * @description Pages returns the list of switchable pages including the main page
+     * @returns {Object[]} An array of page objects
+     */
     pages() {
       return [{id: -1, name: "Main Page"}, ...this.metricsList]
     },
   },
+  /**
+   * @description Runs all setup for the application including data fetching and event listeners for connection status
+   */
   created() {
     this.getRegistries().then(() => this.getTimeSeries().then(() => this.getCounts()))
     window.addEventListener('offline', () => this.triggerSnack({ 
@@ -220,13 +241,29 @@ export default {
     }
   },
   methods: {
+    /**
+     * @description Trigger the snackbar with the parameters contained in the snackbar trigger object
+     * @param {{
+     *  color: String,
+     *  state: Boolean,
+     *  text: String
+     * }} trigger A trigger object for deciding the snackbar color and text
+     */
     triggerSnack(trigger) {
       this.snackbar = trigger
     },
+    /**
+     * @description Changes the date and filters so that all entries in the time dropdown aree from that selected day
+     * @param {String} input Input string in a simple EU date format
+     */
     changeDate(input) {
       let selected = new Date(input)
       this.daySeries = this.timeSeries.filter(e => datesAreOnSameDay(new Date(e.date), selected))
     },
+    /**
+     * @async
+     * @description Fetch time series data from the api, returns a list of dates and times
+     */
     async getTimeSeries() {
       try {
         let { data } = await this.axios.get(`${config.apiURL}/csvList`)
@@ -237,6 +274,10 @@ export default {
         console.log(e)
       }
     },
+    /**
+     * @async
+     * @description Fetch counts data from the api
+     */
     async getCounts() {
       try {
         let { data } = await this.axios.get(`${config.apiURL}/counts?registries=${this.registryList.map(e => e.Registry).join(',')}&set=${this.selectedTime.path || undefined}`)
@@ -245,6 +286,10 @@ export default {
         console.log(e)
       }
     },
+    /**
+     * @async
+     * @description Upload a single CSV file to the API service
+     */
     async upload () {
       if (this.file !== null) {
         let formData = new FormData()
@@ -267,16 +312,33 @@ export default {
         }
       }
     },
+    /**
+     * @description Change the current page based on the clicked metric list itme
+     * @param {{
+     *  id: Number,
+     *  text: String, 
+     *  value: String,
+     *  icon: String
+     * }} metric Metric page object
+     */
     changePage(metric) {
       this.currentPage = metric.id
       this.metric = metric.value || ''
     },
+    /**
+     * @description Select or unselect all registries in the current registry list
+     * @param {boolean} choice Boolean to chooce between select or unselect
+     */
     selectAll(choice) {
       this.registryList = this.registryList.map(reg => ({
         ...reg,
         selected: choice
       }))
     },
+    /**
+     * @async
+     * @description Get a list of registries for the data in question
+     */
     async getRegistries() {
       let { data }  = await this.axios.get(`${config.apiURL}/registries`)
       this.registryList = data.map((e,i) => ({
