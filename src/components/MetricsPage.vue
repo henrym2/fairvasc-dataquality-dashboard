@@ -2,19 +2,28 @@
   <v-container>
     <v-row>
       <v-col>
-        <Widget title="Average Correctness of Data Over Time" subtitle="Average total correctness of data over time" :id=0 @expand="maximise" :loading="loading">
+        <Widget :title="`Average ${this.metricTitle} of Data Over Time`" :subtitle="`Average total ${this.metric} of data over time`" :id=0 @expand="maximise" :loading="loading">
+          <template v-slot:controls>
+            <time-range-selector
+              @rangeChange="getMetricsOverTime"
+              :beginning="new Date(events[events.length-1].date).toISOString().substr(0,10)"
+              :end="new Date(events[0].date).toISOString().substr(0,10)"
+              :events="events"
+            >
+            </time-range-selector>
+          </template>
           <line-chart :data="filterReg(dataOverTime)" :library="config.zoomAndPan" :download="true" suffix="%"></line-chart>
         </Widget>
       </v-col>
       <v-col>
-        <Widget title="Average total correctness" subtitle="Average total correctness of the current dataset" :id=1 @expand="maximise" :loading=loading>
+        <Widget :title="`Average total ${this.metric}`" :subtitle="`Average total ${this.metric} of the current dataset`" :id=1 @expand="maximise" :loading=loading>
             <pie-chart :data="averageAll(filterReg(data))" :download="true" suffix="%"></pie-chart>
         </Widget>
       </v-col>
     </v-row>
     <v-row>
       <v-col>
-        <Widget title="Correctness percentage per field" subtitle="Percentage of correct data per field in the dataset" :id=2 @expand="maximise" :loading="loading">
+        <Widget :title="`${this.metricTitle} percentage per field`" :subtitle="`Percentage of ${this.metric} data per field in the dataset`" :id=2 @expand="maximise" :loading="loading">
           <template v-slot:controls>
               <field-value-graph-controls
                 :filter.sync="filter"
@@ -59,6 +68,7 @@
 <script>
 import Widget from "../components/Widget.vue"
 import fieldValueGraphControls from "../components/fieldValueGraphControls.vue"
+import TimeRangeSelector from "../components/TimeRangeSelector.vue"
 
 
 import config from "../config"
@@ -70,26 +80,32 @@ import computationHandlers from "../js/computationHandlers.js"
     name: 'Correctness',
     components: {
       Widget,
-      fieldValueGraphControls
+      fieldValueGraphControls,
+      TimeRangeSelector
     },
     props: {
       registries: Array,
-      set: {},
+      set: Object,
       counts: Object,
-      metric: String
+      metric: String,
+      events: Array
+    },
+    computed: {
+      metricTitle () {
+        return this.metric[0].toUpperCase() + this.metric.slice(1);
+      }
     },
     created() {
       this.getData()
-      this.getCorrectnessOverTime()
+      this.getMetricsOverTime(new Date(this.events[this.events.length-1].date), new Date(this.events[0].date))
     },
     watch: {
       set() {
         this.getData()
-        this.getCorrectnessOverTime()
       },
       metric() {
-          this.getData()
-          this.getCorrectnessOverTime()
+        this.getData()
+        this.getMetricsOverTime(new Date(this.events[this.events.length-1].date), new Date(this.events[0].date))
       }
     },
     data: () => ({
@@ -128,10 +144,13 @@ import computationHandlers from "../js/computationHandlers.js"
       averageAll(arr) {
         return dataHandlers.averageAll(arr)
       },
-      async getCorrectnessOverTime() {
+      async getMetricsOverTime(start, end) {
         try {
+          console.log(start, end)
+          let startDate = new Date(start)
+          let endDate = new Date(end)
           this.loading = true
-          let {data} = await this.axios.get(`${config.apiURL}/timeData/${this.metric}?registries=${this.registries.map(e => e.Registry).join(',')}`)
+          let {data} = await this.axios.get(`${config.apiURL}/timeData/${this.metric}?registries=${this.registries.map(e => e.Registry).join(',')}&start=${startDate.getTime()}&end=${endDate.getTime()}`)
           this.dataOverTime = data
           this.loading = false
         } catch (e) {

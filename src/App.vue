@@ -126,7 +126,15 @@
     
     <v-main>
         <main-page @navigate="(page) => {changePage(metricsList.find(e => e.name === page))}" v-if="currentPage === -1" :registries="registryList || []" :set="selectedTime" :counts="counts" @error="triggerSnack"></main-page>
-        <metrics-page v-if="metric !== ''" :registries="registryList || []" :set="selectedTime" @error="triggerSnack" :counts="counts" :metric="metric"></metrics-page>
+        <metrics-page 
+          v-if="metric !== ''" 
+          :registries="registryList || []"
+          :set="selectedTime" 
+          @error="triggerSnack"
+          :counts="counts" 
+          :metric="metric"
+          :events="timeSeries"
+          ></metrics-page>
     </v-main>
     <v-snackbar
       v-model="snackbar.state"

@@ -9,8 +9,13 @@
             v-bind="attrs"
             v-on="on"
             class="mb-4"
+            fab
+            small
+            color="primary"
           >
-          Controls
+            <v-icon>
+              mdi-cog
+            </v-icon>
           </v-btn>
         </template>
         <v-card>
