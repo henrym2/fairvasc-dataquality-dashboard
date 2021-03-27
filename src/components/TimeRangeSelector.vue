@@ -112,7 +112,8 @@ export default {
     methods: {
         /**
             @description Callback function triggered whenever the start or end dates change
-            @returns {(Date, Date)}
+            @emits TimeRangeSelector:rangeChange
+            @property {Date Date} dates Emits a pair of dates to be passed into a handler function of signiture (date, date) => {}
          */
         datesChanged () {
             this.$emit("rangeChange", new Date(this.startDate), new Date(this.endDate))

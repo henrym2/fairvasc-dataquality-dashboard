@@ -210,6 +210,12 @@ import computationHandlers from "../js/computationHandlers.js"
       },
       /**
        * @description Error emission handler for triggering the error event to be caught by the parent component
+       * @emits MetricsPage:error
+       * @property {{
+       *  text: string,
+       *  state: boolean,
+       *  color: string
+       * }} error 
        */
       error() {
         this.loading = false

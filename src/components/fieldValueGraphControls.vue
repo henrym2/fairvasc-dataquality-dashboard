@@ -110,14 +110,18 @@ export default {
  methods: {
    /**
     * @description Event hanlder and emitter for show count toggle switch
-    * @returns {boolean} Count toggle state
+    * @emits FieldGraphControls:countClick
+    * @type {boolean}
+    * @property {boolean} count state of the count toggle
     */
     showClicked () {
         this.$emit("countClick", this.count)        
     },
     /**
-     * @description Event handler for emitting the current list of selected filters
-     * @returns {string[]} List of currently selected fields
+     * @description Event handler for emitting the current list of selected filters on change
+     * @emits FieldGraphControls:filtered
+     * @type {string[]}
+     * @property {string[]} selectedFilters Array containing the current list of select filters
      */
     selected() {
         this.$emit("filtered", this.selectedFilt)

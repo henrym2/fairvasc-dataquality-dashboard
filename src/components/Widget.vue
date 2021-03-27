@@ -60,7 +60,8 @@ export default {
     methods: {
         /**
         @description Called in order to trigger the expand event
-        @returns {{
+        @emits Widget:expand 
+        @property {{
             id: number,
             title: string,
             subtitle: string
