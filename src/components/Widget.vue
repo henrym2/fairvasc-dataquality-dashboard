@@ -43,6 +43,12 @@
 </template>
 
 <script>
+/**
+    @param {string} title The title of the Widget
+    @param {string} subtitle Subtitle for the widget
+    @param {number} id Id for the widget for when handling expansion panels
+    @param {boolean} loading Param for telling the card to go into loading mode or not 
+ */
 export default {
     name: "Widget",
     props: {
@@ -52,6 +58,14 @@ export default {
         "loading": Boolean
     },
     methods: {
+        /**
+        @description Called in order to trigger the expand event
+        @returns {{
+            id: number,
+            title: string,
+            subtitle: string
+        }}
+         */
         expand() {
             this.$emit("expand", {id: this.id, name: this.title, subtitle: this.subtitle})
         }

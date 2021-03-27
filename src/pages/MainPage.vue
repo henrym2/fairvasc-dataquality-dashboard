@@ -2,6 +2,7 @@
   <v-container>
     <v-row>
       <v-col>
+        <!-- Start of graphs -->
         <Widget subtitle="Percentage of duplicated entries" :id=0 @expand="maximise" title="Uniqueness" :loading="loading">
           <template v-slot:title>
             <a style="color:black" @click="navigate('Uniqueness')">Uniqueness</a>
@@ -37,6 +38,8 @@
           <column-chart label="Inconsistent data" :library="config.zoomAndPan" :data="filterReg(consistent)" :download="true" suffix="%"></column-chart>
         </Widget>
       </v-col>
+      <!-- End of graphs -->
+      <!-- Start of expansion dialog -->
     </v-row>
      <v-dialog
       v-model="dialog"
@@ -64,6 +67,7 @@
       </v-card>
     </v-dialog>
   </v-container>
+  <!-- End of expansion dialog -->
 </template>
 
 <script>
@@ -101,14 +105,35 @@ import config from "../config"
       }
     },
     methods: {
+      /**
+       * @description Handler for deciding which widget to maximise in the page
+       * @param {{
+       * id: number, 
+       * name: string, 
+       * subtitle: string
+       * }} toMaximise Object for referencing the correct graph to inject into the maximisation dialog
+       */
       maximise(toMaximise) {
         this.maximised = toMaximise
         this.dialog = true
       },
+      /**
+       * @description Handler function for filtering the displayed registries
+       * @param {{
+       *  id: number, 
+       *  Registry: string, 
+       *  selected: boolean,
+       *  color: string
+       * }[]} arr Array containing registry object information
+       */
       filterReg (arr) {
         let reg = this.registries.filter(r => r.selected).map(r => r.Registry);
         return arr.filter(d => reg.includes(d[0]))
       },
+      /**
+       * @async
+       * @description Async fetch for all metric data in provided registries
+       */
       async getData() {
         try {
           this.loading = true
@@ -139,6 +164,9 @@ import config from "../config"
           console.log(e)
         }
       },
+      /**
+       * @description Generic error triggering function for providing snack trigger to App.vue
+       */
       error() {
         this.loading = false
         this.$emit("error", 
@@ -148,9 +176,21 @@ import config from "../config"
           color: "error"  
         })
       },
+      /**
+       * @description Navigation event emitter
+       * @param {{
+       * 
+       * }} page Page to trigger navigation to
+       */
       navigate(page) {
         this.$emit("navigate", page)
       },
+      /**
+       * @description Data format handler for preparing object data for graphs
+       * @param {{
+       *  registry: number
+       * }} data Registry data object as returned by the API
+       */
       formatData(data) {
         return Object.keys(data).map(e => (
           [e, data[e]]

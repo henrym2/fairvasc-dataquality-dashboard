@@ -108,12 +108,24 @@ export default {
      }
  },
  methods: {
+   /**
+    * @description Event hanlder and emitter for show count toggle switch
+    * @returns {boolean} Count toggle state
+    */
     showClicked () {
         this.$emit("countClick", this.count)        
     },
+    /**
+     * @description Event handler for emitting the current list of selected filters
+     * @returns {string[]} List of currently selected fields
+     */
     selected() {
         this.$emit("filtered", this.selectedFilt)
     },
+    /**
+     * @description Event handler for selecting all fitters dependant on state of select all element. If selectAll is active, then unselect all. If active, then select all. Then emit results
+     * @param {boolean} state Boolean to decide on wheither or not all should be selected or unselected
+     */
     selectAll(state) {
         if (state) {
             this.selectedFilt = this.filterKeys

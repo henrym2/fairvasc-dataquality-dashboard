@@ -120,10 +120,23 @@ import computationHandlers from "../js/computationHandlers.js"
       loading: false
     }),
     methods: {
+      /**
+       * @description Method for deciding which graph to display in maximised dialog
+       * @param {{
+       *  id: number,
+       *  title: string,
+       *  subtitle: string
+       * }} toMaximise Object emitted by the Widget component
+       */
       maximise(toMaximise) {
         this.maximised = toMaximise
         this.dialog = true
       },
+      /**
+       * @description Method for switching between percentage values and "total count" metric values
+       * @param {Array} data Array containing all metric data retrieved from API
+       * @param {boolean} type Boolean for deciding which metric type to show, True for counts, false for percentages
+       */
       dataType(data, type) {
         let out = data
         if (type) {
@@ -138,12 +151,29 @@ import computationHandlers from "../js/computationHandlers.js"
         } 
         return out
       },
+      /**
+       * @description Filter out data based on the selected registries
+       * @param {array} arr Data array
+       * @returns {array} Data array containing only selected registries 
+       */
       filterReg (arr) {
         return dataHandlers.filterReg(arr, this.registries)
       },
+      /**
+       * @description Average all metrics in each given registry and return the registry and associated average
+       * @param {arr} arr Data array
+       * @returns {{
+       *  registry: number
+       * }[]} Returns an array of key value pairs, each ley being a registry and each value being its average metric value
+       */
       averageAll(arr) {
         return dataHandlers.averageAll(arr)
       },
+      /**
+       * @description retrieve metric values over time based on a given date:time range from start to end
+       * @param {string} start start date
+       * @param {string} end end date
+       */
       async getMetricsOverTime(start, end) {
         try {
           console.log(start, end)
@@ -158,6 +188,9 @@ import computationHandlers from "../js/computationHandlers.js"
           console.log(e)
         }
       },
+      /**
+       * @description Retrieve the specific metric data from the API 
+       */
       async getData() {
         try {
           this.loading = true
@@ -175,6 +208,9 @@ import computationHandlers from "../js/computationHandlers.js"
           console.log(e)
         }
       },
+      /**
+       * @description Error emission handler for triggering the error event to be caught by the parent component
+       */
       error() {
         this.loading = false
         this.$emit("error", 
@@ -184,9 +220,19 @@ import computationHandlers from "../js/computationHandlers.js"
           color: "error"  
         })
       },
+      /**
+       * @description SImple handler interface for retrieving keys for an object
+       * @param {Object} obj 
+       * @returns {string[]} Array of object keys
+       */
       extractKeys(obj) {
         return Object.keys(obj)
       },
+      /**
+       * @description Handler for filtering values based on selected fields
+       * @param {object[]} arr Input data array
+       * @returns {object[]} Output data array filtered by field values
+       */
       filterVals(arr) {
         return dataHandlers.filterVals(arr, this.filter)
       }

@@ -87,6 +87,16 @@
 </template>
 
 <script>
+/**
+ * @description Range selector for two time periods
+ * @param {string} beginning initial start date
+ * @param {string} end Initial end date
+ * @param {{
+ *  date: Date,
+ *  path: string
+ *  name: string
+ * }[]} events Array of entry objects for tagging events on date selectors. 
+ */
 export default {
     props: {
         beginning: String,
@@ -100,6 +110,10 @@ export default {
         }
     },
     methods: {
+        /**
+            @description Callback function triggered whenever the start or end dates change
+            @returns {(Date, Date)}
+         */
         datesChanged () {
             this.$emit("rangeChange", new Date(this.startDate), new Date(this.endDate))
         }
