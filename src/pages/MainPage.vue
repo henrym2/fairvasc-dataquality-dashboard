@@ -138,7 +138,7 @@ import config from "../config"
         try {
           this.loading = true
           let promises = ['unique', 'complete', 'consistency', 'correct']
-          promises = promises.map(e => this.axios.get(`${config.apiURL}/totals/${e}?registries=${this.registries.map(e => e.Registry).join(',')}&set=${this.set.path}`, 
+          promises = promises.map(e => this.axios.get(`${config.apiURL}/metrics/totals/${e}?registries=${this.registries.map(e => e.Registry).join(',')}&set=${this.set.path}`, 
             {
               registries: this.registries.map(e => e.Registry),
               set: this.set

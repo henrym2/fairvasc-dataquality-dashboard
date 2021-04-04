@@ -180,7 +180,7 @@ import computationHandlers from "../js/computationHandlers.js"
           let startDate = new Date(start)
           let endDate = new Date(end)
           this.loading = true
-          let {data} = await this.axios.get(`${config.apiURL}/timeData/${this.metric}?registries=${this.registries.map(e => e.Registry).join(',')}&start=${startDate.getTime()}&end=${endDate.getTime()}`)
+          let {data} = await this.axios.get(`${config.apiURL}/metrics/timeData/${this.metric}?registries=${this.registries.map(e => e.Registry).join(',')}&start=${startDate.getTime()}&end=${endDate.getTime()}`)
           this.dataOverTime = data
           this.loading = false
         } catch (e) {

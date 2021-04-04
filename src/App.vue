@@ -266,7 +266,7 @@ export default {
      */
     async getTimeSeries() {
       try {
-        let { data } = await this.axios.get(`${config.apiURL}/csvList`)
+        let { data } = await this.axios.get(`${config.apiURL}/csvs`)
         this.timeSeries = data
         this.selectedTime = data[0]
         this.selectedDay = new Date(data[0].date).toISOString().substr(0,10)
@@ -280,7 +280,7 @@ export default {
      */
     async getCounts() {
       try {
-        let { data } = await this.axios.get(`${config.apiURL}/counts?registries=${this.registryList.map(e => e.Registry).join(',')}&set=${this.selectedTime.path || undefined}`)
+        let { data } = await this.axios.get(`${config.apiURL}/metrics/counts?registries=${this.registryList.map(e => e.Registry).join(',')}&set=${this.selectedTime.path || undefined}`)
         this.counts = data
       } catch (e) {
         console.log(e)
@@ -297,7 +297,7 @@ export default {
         formData.append('file', this.file)
         formData.append('name', filename)
         try {
-          await this.axios.post(`${config.apiURL}/uploadCSV`, formData, {
+          await this.axios.post(`${config.apiURL}/csvs`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             },
