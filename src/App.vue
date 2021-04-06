@@ -109,19 +109,22 @@
       </v-expansion-panel>
       </v-expansion-panels>
       <v-divider></v-divider>
+      <v-list-item>
+        Upload CSV
+      </v-list-item>
       <v-list-item class="mt-3">
         <v-file-input
+          style="max-width:13rem"
           v-model="file"
           :state="Boolean(file)"
           placeholder=".csv"
           outlined
-          :show-size="1000"
           label="Quality csv"
           dense
+          append-icon="publish"
+          @click:append="upload"
+          single-line
         ></v-file-input>
-        <v-list-item-action class="mb-9">
-          <v-btn fab color="primary" @click=upload small><v-icon>publish</v-icon></v-btn>
-        </v-list-item-action>
       </v-list-item>
     </v-list>
 
@@ -266,12 +269,24 @@ export default {
      */
     async getTimeSeries() {
       try {
-        let { data } = await this.axios.get(`${config.apiURL}/csvs`)
-        this.timeSeries = data
-        this.selectedTime = data[0]
-        this.selectedDay = new Date(data[0].date).toISOString().substr(0,10)
+        let response = await this.axios.get(`${config.apiURL}/csvs`)
+        if (response.status === 204) {
+          this.triggerSnack({
+            state: true,
+            color: "warning",
+            text: "No data found"
+          })
+        } else {
+          this.timeSeries = response.data
+          this.selectedTime = response.data[0]
+          this.selectedDay = new Date(response.data[0].date).toISOString().substr(0,10)
+        }
       } catch (e) {
-        console.log(e)
+        this.triggerSnack({
+          state: true,
+          color: "error",
+          text: e.response.body || "An error occured while getting csv data."
+        })
       }
     },
     /**
@@ -280,10 +295,22 @@ export default {
      */
     async getCounts() {
       try {
-        let { data } = await this.axios.get(`${config.apiURL}/metrics/counts?registries=${this.registryList.map(e => e.Registry).join(',')}&set=${this.selectedTime.path || undefined}`)
-        this.counts = data
+        let response = await this.axios.get(`${config.apiURL}/metrics/counts?registries=${this.registryList.map(e => e.Registry).join(',')}&set=${this.selectedTime.path || undefined}`)
+        if (response.status === 204) {
+          this.triggerSnack({
+            state: true,
+            color: "warning",
+            text: "No data found"
+          })
+        } else {
+          this.counts = response.data
+        }
       } catch (e) {
-        console.log(e)
+        this.triggerSnack({
+          state: true,
+          color: "error",
+          text: e.response.body || "An error occured while getting registry data."
+        })
       }
     },
     /**
@@ -308,6 +335,12 @@ export default {
           this.file = null
           await this.getTimeSeries()
         } catch (e) {
+          this.triggerSnack({
+            state: true, 
+            color: "warning",
+            text: e.response.data || "An error occured while uploading file"
+          })
+          this.file = null
           console.log(e, "Error")
         }
       }
@@ -340,10 +373,28 @@ export default {
      * @description Get a list of registries for the data in question
      */
     async getRegistries() {
-      let { data }  = await this.axios.get(`${config.apiURL}/registries`)
-      this.registryList = data.map((e,i) => ({
-        id: i, Registry: e, selected: true, color: String(randomColor())
-      }))
+      try {
+        let response  = await this.axios.get(`${config.apiURL}/registries`)
+
+        if (response.status === 204) {
+          this.triggerSnack({
+            state: true,
+            color: "warning",
+            text: "No data found"
+          })
+        } else {
+          this.registryList = response.data.map((e,i) => ({
+            id: i, Registry: e, selected: true, color: String(randomColor())
+          }))
+        }
+      }
+      catch (e) {
+        this.triggerSnack({
+          state: true,
+          color: "error",
+          text: e.response.body || "An error occured while getting registries."
+        })
+      }
     }
   }
 };

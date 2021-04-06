@@ -180,8 +180,17 @@ import computationHandlers from "../js/computationHandlers.js"
           let startDate = new Date(start)
           let endDate = new Date(end)
           this.loading = true
-          let {data} = await this.axios.get(`${config.apiURL}/metrics/timeData/${this.metric}?registries=${this.registries.map(e => e.Registry).join(',')}&start=${startDate.getTime()}&end=${endDate.getTime()}`)
-          this.dataOverTime = data
+          let response = await this.axios.get(
+            `${config.apiURL}/metrics/timeData/${this.metric}?registries=${this.registries.map(e => e.Registry).join(',')}&start=${startDate.getTime()}&end=${endDate.getTime()}`
+            )
+          if (response.status === 204) {
+            this.$emit("error", {
+              state: true,
+              color: "warning",
+              text: "No data found for this time period."
+            })
+          } 
+          this.dataOverTime = response.data
           this.loading = false
         } catch (e) {
           this.error()
@@ -194,14 +203,24 @@ import computationHandlers from "../js/computationHandlers.js"
       async getData() {
         try {
           this.loading = true
-          let {data} = await this.axios.get(
-            `${config.apiURL}/metrics/${this.metric}?registries=${this.registries.map(e => e.Registry).join(',')}&set=${this.set.path}`)
-          this.data = Object.keys(data).map(e => {
-            return {name: e, data: data[e]}
-          })
-          this.filterKeys = this.extractKeys(this.data[0].data)
-          this.filter = this.filterKeys
-          this.loading = false
+          let response = await this.axios.get(
+            `${config.apiURL}/metrics/${this.metric}?registries=${this.registries.map(e => e.Registry).join(',')}&set=${this.set.path}`
+            )
+          if (response.status === 204) {
+            this.loading = false
+            this.$emit("error", {
+              state: true,
+              color: "warning",
+              text: "No data found for this metric"
+            })
+          } else {
+            this.data = Object.keys(response.data).map(e => {
+              return {name: e, data: response.data[e]}
+            })
+            this.filterKeys = this.extractKeys(this.data[0].data)
+            this.filter = this.filterKeys
+            this.loading = false
+          }
         }
         catch (e) {
           this.error()
