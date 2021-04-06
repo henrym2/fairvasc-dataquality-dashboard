@@ -132,7 +132,14 @@
     <!-- Drawer start -->
     <!-- Content start -->
     <v-main>
-        <main-page @navigate="(page) => {changePage(metricsList.find(e => e.name === page))}" v-if="currentPage === -1" :registries="registryList || []" :set="selectedTime" :counts="counts" @error="triggerSnack"></main-page>
+        <main-page 
+          @navigate="(page) => {changePage(metricsList.find(e => e.name === page))}"
+          v-if="currentPage === -1" 
+          :registries="registryList || []" 
+          :set="selectedTime" 
+          :counts="counts" 
+          @error="triggerSnack">
+          </main-page>
         <metrics-page 
           v-if="metric !== ''" 
           :registries="registryList || []"
